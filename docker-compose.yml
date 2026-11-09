@@ -1,0 +1,41 @@
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: redis-server
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - devops-network
+
+  app1:
+    build: ./app1
+    container_name: message-collector
+    ports:
+      - "5001:5000"
+    environment:
+      REDIS_HOST: redis
+    depends_on:
+      - redis
+    networks:
+      - devops-network
+
+  app2:
+    build: ./app2
+    container_name: dashboard
+    ports:
+      - "5002:5000"
+    environment:
+      REDIS_HOST: redis
+    depends_on:
+      - redis
+    networks:
+      - devops-network
+
+volumes:
+  redis_data:
+
+networks:
+  devops-network:
+    driver: bridge
